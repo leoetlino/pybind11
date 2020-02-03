@@ -561,6 +561,11 @@ template <typename Map, typename Class_> auto map_if_insertion_operator(Class_ &
     );
 }
 
+template <class T, class = void>
+struct iterator_has_value_member_fn : std::false_type {};
+
+template <class T>
+struct iterator_has_value_member_fn<T, std::void_t<decltype(std::declval<T>().value())>> : std::true_type {};
 
 PYBIND11_NAMESPACE_END(detail)
 
@@ -607,7 +612,10 @@ class_<Map, holder_type> bind_map(handle scope, const std::string &name, Args&&.
             auto it = m.find(k);
             if (it == m.end())
               throw key_error();
-           return it->second;
+            if constexpr (detail::iterator_has_value_member_fn<decltype(it)>())
+              return it.value();
+            else
+              return it->second;
         },
         return_value_policy::reference_internal // ref + keepalive
     );
