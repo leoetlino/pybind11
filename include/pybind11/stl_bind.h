@@ -522,21 +522,6 @@ PYBIND11_NAMESPACE_BEGIN(detail)
 template <typename, typename, typename... Args> void map_if_insertion_operator(const Args &...) { }
 template <typename, typename, typename... Args> void map_assignment(const Args &...) { }
 
-// Map assignment when copy-assignable: just copy the value
-template <typename Map, typename Class_>
-void map_assignment(enable_if_t<is_copy_assignable<typename Map::mapped_type>::value, Class_> &cl) {
-    using KeyType = typename Map::key_type;
-    using MappedType = typename Map::mapped_type;
-
-    cl.def("__setitem__",
-           [](Map &m, const KeyType &k, const MappedType &v) {
-               auto it = m.find(k);
-               if (it != m.end()) it->second = v;
-               else m.emplace(k, v);
-           }
-    );
-}
-
 // Not copy-assignable, but still copy-constructible: we can update the value by erasing and reinserting
 template<typename Map, typename Class_>
 void map_assignment(enable_if_t<
@@ -549,12 +534,7 @@ void map_assignment(enable_if_t<
     cl.def("__setitem__",
            [](Map &m, const KeyType &k, const MappedType &v) {
                // We can't use m[k] = v; because value type might not be default constructable
-               auto r = m.emplace(k, v);
-               if (!r.second) {
-                   // value type is not copy assignable so the only way to insert it is to erase it first...
-                   m.erase(r.first);
-                   m.emplace(k, v);
-               }
+               m.insert_or_assign(k, v);
            }
     );
 }
