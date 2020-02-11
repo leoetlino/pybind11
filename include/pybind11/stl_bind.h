@@ -446,9 +446,6 @@ class_<Vector, holder_type> bind_vector(handle scope, std::string const &name, A
     // Register comparison-related operators and functions (if possible)
     detail::vector_if_equal_operator<Vector, Class_>(cl);
 
-    // Register stream insertion operator (if possible)
-    detail::vector_if_insertion_operator<Vector, Class_>(cl, name);
-
     // Modifiers require copyable vector value type
     detail::vector_modifiers<Vector, Class_>(cl);
 
