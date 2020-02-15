@@ -522,7 +522,6 @@ template <typename, typename, typename... Args> void map_assignment(const Args &
 // Not copy-assignable, but still copy-constructible: we can update the value by erasing and reinserting
 template<typename Map, typename Class_>
 void map_assignment(enable_if_t<
-        !is_copy_assignable<typename Map::mapped_type>::value &&
         is_copy_constructible<typename Map::mapped_type>::value,
         Class_> &cl) {
     using KeyType = typename Map::key_type;
